@@ -84,6 +84,11 @@
 #define DIFFICULTY_CUT                                  60  // timestamps to cut after sorting
 #define DIFFICULTY_BLOCKS_COUNT                         DIFFICULTY_WINDOW + DIFFICULTY_LAG
 
+#define DEPOSIT_MIN_AMOUNT                              1 * COIN
+#define DEPOSIT_MIN_TERM                                1000
+#define DEPOSIT_MAX_TERM                                1 * 12 * 21900
+#define DEPOSIT_MIN_TOTAL_RATE_FACTOR                   0
+#define DEPOSIT_MAX_TOTAL_RATE                          4
 
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1   DIFFICULTY_TARGET_V1 * CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2   DIFFICULTY_TARGET_V2 * CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
