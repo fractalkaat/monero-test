@@ -190,6 +190,7 @@ namespace
 
   const command_line::arg_descriptor< std::vector<std::string> > arg_command = {"command", ""};
 
+  const char* USAGE_DEPOSIT("deposit [block count] [currency amount]");
   const char* USAGE_START_MINING("start_mining [<number_of_threads>] [bg_mining] [ignore_battery]");
   const char* USAGE_SET_DAEMON("set_daemon <host>[:<port>] [trusted|untrusted|this-is-probably-a-spy-node]");
   const char* USAGE_SHOW_BALANCE("balance [detail]");
@@ -741,6 +742,98 @@ std::string simple_wallet::get_command_usage(const std::vector<std::string> &arg
     ss << tr("Command description: ") << ENDL << description << ENDL;
   }
   return ss.str();
+}
+
+bool simple_wallet::confirm_deposit(uint64_t term, uint64_t amount)
+{
+  uint64_t interest = cryptonote::core::calculateInterest(amount, term);
+  uint64_t min_term = DEPOSIT_MIN_TERM;
+  
+      logger(logging::INFO) << "Confirm deposit details:\n"
+      << "\tAmount: " << currency.parse_amount(amount) << "\n"
+      << "\tMonths: " << term / min_term << "\n"
+      << "\tInterest: " << currency.parse_amount(interest) << "\n";
+
+    logger(logging::INFO) << "Is this correct? (Y/N): \n";
+
+    char c;
+    std::cin >> c;
+    c = std::tolower(c);
+
+    if (c == 'y')
+    {
+      return true;
+    }
+    else if (c == 'n')
+    {
+      return false;
+    }
+    else
+    {
+      logger(logging::ERROR) << "Bad input, please enter either Y or N.";
+    }
+
+    return false;
+}
+
+bool simple_wallet::deposit(const std::vector<std::string> &args/* = std::vector<std::string>()*/)
+{
+  if (args.size() != 2)
+  {
+    logger(ERROR) << "Usage: deposit <months> <amount>";
+    return true;
+  }
+  try
+  {
+    /**
+     * Change arg to uint64_t using boost then
+     * multiply by min_term so user can type in months
+    **/
+    uint64_t min_term = DEPOSIT_MIN_TERM;
+    uint64_t max_term = DEPOSIT_MAX_TERM;  
+    uint64_t deposit_term = boost::lexical_cast<uint64_t>(args[0]) * min_term;
+    
+    /* Now validate the deposit term and the amount */
+    if (deposit_term < min_term)
+    {
+      logger(ERROR, BRIGHT_RED) << "Deposit term is too small, min=" << min_term << ", given=" << deposit_term;
+      return true;
+    }
+
+    if (deposit_term > max_term)
+    {
+      logger(ERROR, BRIGHT_RED) << "Deposit term is too big, max=" << max_term << ", given=" << deposit_term;
+      return true;
+    }
+
+    uint64_t deposit_amount = boost::lexical_cast<uint64_t>(args[1]);
+    bool ok = parse_amount(args[1], deposit_amount); // cryptonote::parse_amount
+    
+    if (!ok || 0 == deposit_amount)
+    {
+      logger(ERROR, BRIGHT_RED) << "amount is wrong: " << deposit_amount <<
+        ", expected number from 1 to " << print_money(MONEY_SUPPLY);
+      return true;
+    }
+    if (deposit_amount < DEPOSIT_MIN_AMOUNT)
+    {
+      logger(ERROR, BRIGHT_RED) << "Deposit amount is too small, min=" << DEPOSIT_MIN_AMOUNT
+                                << ", given=" << parse_amount(deposit_amount);
+      return true;
+    }
+
+    if (!m_chelper.confirm_deposit(deposit_term, deposit_amount, m_testnet, m_currency, logger))
+    {
+      logger(ERROR) << "Deposit is not being created.";
+      return true;
+    }
+
+    logger(INFO) << "Creating deposit...";
+
+    /* Use defaults for fee + mix in */
+    uint64_t deposit_fee = cn::parameters::MINIMUM_FEE_V2;
+    uint64_t deposit_mix_in = cn::parameters::MINIMUM_MIXIN;
+    // TODO
 }
 
 bool simple_wallet::viewkey(const std::vector<std::string> &args/* = std::vector<std::string>()*/)
