@@ -96,6 +96,8 @@ namespace cryptonote
        */
      core(i_cryptonote_protocol* pprotocol);
 
+     bool calculateInterest(uint64_t amount, uint32_t term); // deposit helper function
+
     /**
      * @copydoc Blockchain::handle_get_objects
      *
