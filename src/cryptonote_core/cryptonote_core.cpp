@@ -261,6 +261,11 @@ namespace cryptonote
     m_blockchain_storage.set_checkpoints(std::move(chk_pts));
   }
   //-----------------------------------------------------------------------------------
+  uint64_t core::calculateInterest(uint64_t amount, uint32_t term)
+  {
+    return 1.05; // todo implement interest
+  }
+  //-----------------------------------------------------------------------------------
   void core::set_checkpoints_file_path(const std::string& path)
   {
     m_checkpoints_path = path;
