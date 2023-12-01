@@ -111,6 +111,7 @@ namespace cryptonote
     bool seed(const std::vector<std::string> &args = std::vector<std::string>());
     bool encrypted_seed(const std::vector<std::string> &args = std::vector<std::string>());
     bool restore_height(const std::vector<std::string> &args = std::vector<std::string>());
+    bool confirm_deposit(uint64_t term, uint64_t amount); // deposit helper function
 
     /*!
      * \brief Sets seed language.
